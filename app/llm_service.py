@@ -43,13 +43,19 @@ def clasificar_con_ollama(texto_incidencia: str, modelo: str = "llama3.2:3b") ->
     texto_respuesta = respuesta["message"]["content"]
 
     datos_json = _extraer_json(texto_respuesta)
-    resultado = TriajeOutput(
-        categoria=datos_json["categoria"],
-        urgencia=datos_json["urgencia"],
-        resumen=datos_json["resumen"],
-        departamento=datos_json["departamento"],
-        razonamiento=texto_respuesta.split("Answer:")[0].strip(),
+    
+    try:
+        resultado = TriajeOutput(
+            categoria=datos_json["categoria"],
+            urgencia=datos_json["urgencia"],
+            resumen=datos_json["resumen"],
+            departamento=datos_json["departamento"],
+            razonamiento=texto_respuesta.split("Answer:")[0].strip(),
     )
+    except KeyError as clave_faltante:
+        raise RespuestaLLMInvalida(
+            f"El JSON del modelo no incluye la clave requerida: {clave_faltante}"
+        )
 
     metadatos = {
         "proveedor": "ollama",
