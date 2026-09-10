@@ -1,5 +1,7 @@
-from fastapi import FastAPI
-from app.schemas import IncidenciaInput, TriajeOutput, Categoria, Urgencia
+import ollama
+from fastapi import FastAPI, HTTPException
+from app.schemas import IncidenciaInput, TriajeOutput
+from app.llm_service import clasificar_con_ollama, RespuestaLLMInvalida
 
 app = FastAPI(
     title="Motor de Triaje de Incidencias Urbanas",
@@ -15,10 +17,18 @@ def raiz():
 
 @app.post("/triage", response_model=TriajeOutput)
 def triage(incidencia: IncidenciaInput):
-    return TriajeOutput(
-        categoria=Categoria.riesgo_caida,
-        urgencia=Urgencia.alta,
-        resumen="Rama rota con riesgo de caída sobre banco transitado",
-        departamento="Parques y Jardines",
-        razonamiento="[Placeholder] Aquí irá el razonamiento real del LLM.",
-    )
+    try:
+        resultado, metadatos = clasificar_con_ollama(incidencia.texto)
+        return resultado
+
+    except RespuestaLLMInvalida as error:
+        raise HTTPException(
+            status_code=502,
+            detail=f"El modelo devolvió una respuesta con formato incorrecto: {error}",
+        )
+
+    except (ollama.ResponseError, ConnectionError) as error:
+        raise HTTPException(
+            status_code=503,
+            detail=f"No se pudo contactar con el servicio de Ollama: {error}",
+        )
