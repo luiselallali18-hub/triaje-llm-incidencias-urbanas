@@ -1,4 +1,4 @@
-"""
+﻿"""
 Dashboard de triaje de incidencias urbanas.
 
 Interfaz Human-in-the-loop: el operador introduce el texto de una
@@ -24,6 +24,38 @@ st.set_page_config(
     page_title="Triaje de Incidencias Urbanas",
     page_icon="🌳",
     layout="wide",
+)
+
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background:
+            linear-gradient(rgba(245, 250, 247, 0.35), rgba(245, 250, 247, 0.35)),
+            url("https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=1920&q=80");
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center;
+    }
+    
+    h1, h2, h3, p, label, .stMarkdown, .stTabs [data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.78);
+        border-radius: 6px;
+        padding: 3px 8px;
+        width: fit-content;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    h1 {
+        padding: 6px 12px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding: 6px 12px;
+    }
+</style>
+    """,
+    unsafe_allow_html=True,
 )
 
 st.title("🌳 Motor de Triaje de Incidencias Urbanas")
@@ -160,4 +192,7 @@ with tab_metricas:
                 st.metric("Coste total", f"${df_filtrado['coste_estimado_usd'].sum():.4f}")
         else:
             st.info("Aún no hay datos registrados en el CSV de métricas.")
+
+
+
 
