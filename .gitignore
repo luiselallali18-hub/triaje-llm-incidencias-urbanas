@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Métricas generadas en cada ejecución local (no forman parte del código fuente)
+metrics.csv
