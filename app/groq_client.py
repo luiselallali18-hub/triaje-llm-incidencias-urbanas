@@ -11,6 +11,7 @@ Uso:
 """
 
 import os
+import json
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -28,21 +29,33 @@ client = Groq(api_key=GROQ_API_KEY)
 
 MODEL = "openai/gpt-oss-120b"
 
+
+CATEGORIAS_VALIDAS = ["bache", "alumbrado", "basura", "agua", "ruido", "otro"]
+URGENCIAS_VALIDAS = ["baja", "media", "alta"]
+
 SYSTEM_PROMPT = (
     "Eres un asistente de triaje de incidencias urbanas para un ayuntamiento. "
     "Dado el texto de una incidencia reportada por un ciudadano, clasifica: "
-    "1) categoria (ej: bache, alumbrado, basura, agua, ruido, otro), "
-    "2) urgencia (baja, media, alta), "
-    "3) un resumen breve en una frase. "
-    "Responde siempre en español, de forma concisa y estructurada."
+    "1) categoria: una de " + ", ".join(CATEGORIAS_VALIDAS) + " "
+    "2) urgencia: una de " + ", ".join(URGENCIAS_VALIDAS) + " "
+    "3) resumen: una frase breve en español. "
+    "Responde EXCLUSIVAMENTE con un JSON válido, sin texto adicional, "
+    "con exactamente estas claves: categoria, urgencia, resumen. "
+    'Ejemplo de formato: {"categoria": "bache", "urgencia": "media", "resumen": "..."}'
 )
 
 
-def clasificar_incidencia(texto: str) -> str:
+def clasificar_incidencia(texto: str) -> dict:
     """
-    Envía el texto de una incidencia a Groq y devuelve la clasificación
-    generada por el modelo (categoría, urgencia y resumen).
+    Envía el texto de una incidencia a Groq y devuelve un diccionario
+    estructurado con las claves: categoria, urgencia, resumen.
+
+    Lanza ValueError si el texto está vacío o si el modelo no devuelve
+    un JSON válido con las claves esperadas.
     """
+    if not texto or not texto.strip():
+        raise ValueError("El texto de la incidencia no puede estar vacío.")
+
     respuesta = client.chat.completions.create(
         model=MODEL,
         messages=[
@@ -51,13 +64,33 @@ def clasificar_incidencia(texto: str) -> str:
         ],
         temperature=0.2,
         max_tokens=300,
+        response_format={"type": "json_object"},
     )
-    return respuesta.choices[0].message.content
+
+    contenido = respuesta.choices[0].message.content
+
+    try:
+        resultado = json.loads(contenido)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"El modelo no devolvió un JSON válido: {contenido}"
+        ) from e
+
+    claves_esperadas = {"categoria", "urgencia", "resumen"}
+    if not claves_esperadas.issubset(resultado.keys()):
+        raise ValueError(
+            f"Faltan claves en la respuesta del modelo. "
+            f"Esperadas: {claves_esperadas}, recibidas: {set(resultado.keys())}"
+        )
+
+    return resultado
 
 
 if __name__ == "__main__":
     incidencia_prueba = "Llevo tres días sin luz en la farola de la esquina de mi calle, es una zona muy oscura por la noche."
     print("Enviando incidencia de prueba a Groq...\n")
     resultado = clasificar_incidencia(incidencia_prueba)
-    print("Respuesta del modelo:\n")
-    print(resultado)
+    print("Respuesta estructurada del modelo:\n")
+    print(f"  Categoría: {resultado['categoria']}")
+    print(f"  Urgencia:  {resultado['urgencia']}")
+    print(f"  Resumen:   {resultado['resumen']}")
