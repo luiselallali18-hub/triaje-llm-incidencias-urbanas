@@ -36,7 +36,7 @@ with st.form("formulario_incidencia"):
         placeholder="Ej: Hay una rama rota colgando sobre un banco en el Retiro",
         height=120,
     )
-    proveedor = st.selectbox("Proveedor del modelo", options=["ollama"])
+    proveedor = st.selectbox("Proveedor del modelo", options=["ollama", "groq"])
     enviado = st.form_submit_button("Clasificar incidencia")
 
 if enviado:

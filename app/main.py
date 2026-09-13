@@ -2,7 +2,7 @@ import time
 import ollama
 from fastapi import FastAPI, HTTPException
 from app.schemas import IncidenciaInput, TriajeOutput
-from app.llm_service import clasificar_con_ollama, RespuestaLLMInvalida
+from app.llm_service import clasificar_con_ollama, clasificar_con_groq, RespuestaLLMInvalida
 from app.metrics import registrar_peticion
 
 app = FastAPI(
@@ -22,7 +22,10 @@ def triage(incidencia: IncidenciaInput):
     inicio = time.perf_counter()
 
     try:
-        resultado, metadatos = clasificar_con_ollama(incidencia.texto)
+        if incidencia.proveedor.value == "groq":
+            resultado, metadatos = clasificar_con_groq(incidencia.texto)
+        else:
+            resultado, metadatos = clasificar_con_ollama(incidencia.texto)
 
         registrar_peticion(
             proveedor=metadatos["proveedor"],
