@@ -12,7 +12,27 @@ from app.schemas import TriajeOutput
 from dotenv import load_dotenv
 load_dotenv()
 
-_groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+_groq_client = None
+
+
+def _obtener_cliente_groq() -> Groq:
+    """
+    Crea el cliente de Groq la primera vez que se necesita (lazy init),
+    en vez de al importar el modulo. Esto evita que la aplicacion entera
+    falle al arrancar si GROQ_API_KEY no esta definida y solo se quiere
+    usar el proveedor local (Ollama).
+    """
+    global _groq_client
+    if _groq_client is None:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise ConnectionError(
+                "GROQ_API_KEY no esta configurada. Define esta variable de "
+                "entorno (o el Secret en Streamlit Cloud) para usar el "
+                "proveedor 'groq'."
+            )
+        _groq_client = Groq(api_key=api_key)
+    return _groq_client
 
 
 class RespuestaLLMInvalida(Exception):
@@ -84,7 +104,8 @@ def clasificar_con_ollama(texto_incidencia: str, modelo: str = "llama3.2:3b") ->
     reraise=True,
 )
 def _llamar_groq(modelo: str, texto_incidencia: str):
-    return _groq_client.chat.completions.create(
+    cliente = _obtener_cliente_groq()
+    return cliente.chat.completions.create(
         model=modelo,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
