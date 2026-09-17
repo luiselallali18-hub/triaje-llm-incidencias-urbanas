@@ -45,27 +45,77 @@ st.markdown(
     <style>
     .stApp {
         background:
-            linear-gradient(rgba(245, 250, 247, 0.35), rgba(245, 250, 247, 0.35)),
+            linear-gradient(rgba(245, 250, 247, 0.45), rgba(245, 250, 247, 0.45)),
             url("https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=1920&q=80");
         background-attachment: fixed;
         background-size: cover;
         background-position: center;
     }
 
-    h1, h2, h3, p, label, .stMarkdown, .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.78);
+    h1, h2, h3, p, label, .stMarkdown, .stTabs [data-baseweb="tab"],
+    .stAlert, .stMetric, [data-testid="stMetric"],
+    .stDataFrame, [data-testid="stExpander"],
+    .stTextArea, .stSelectbox, .stCaption {
+        background: rgba(255, 255, 255, 0.85);
         border-radius: 6px;
-        padding: 3px 8px;
-        width: fit-content;
+        padding: 6px 10px;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    }
+
+     h1, h2, h3, .stMarkdown, label, p,
+    .stAlert, [data-testid="stMetric"], .stSuccess {
+        width: fit-content;
     }
 
     h1 {
         padding: 6px 12px;
+        font-size: 2.1rem;
     }
 
     .stTabs [data-baseweb="tab"] {
         padding: 6px 12px;
+        font-size: 1.05rem;
+    }
+
+    [data-testid="stExpander"] summary {
+        font-size: 1.05rem;
+        background: transparent;
+        width: fit-content;
+    }
+
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 6px;
+        padding: 14px 18px;
+    }
+
+    [data-testid="stExpanderDetails"] p,
+    [data-testid="stExpanderDetails"] pre,
+    [data-testid="stExpanderDetails"] div {
+        background: transparent;
+        box-shadow: none;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+
+    body, .stApp, .stMarkdown p, .stCaption, label, .stDataFrame, .stMetric {
+        font-size: 1.02rem;
+    }
+
+    [data-testid="stMetricValue"] {
+        font-size: 1.7rem;
+    }
+
+    .stCaption, [data-testid="stCaptionContainer"],
+    .stCaption p, .stCaption span, .stCaption div,
+    [data-testid="stCaptionContainer"] p,
+    [data-testid="stCaptionContainer"] span {
+        color: #1a1a1a !important;
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    .stElementContainer:has(> .stMarkdown:empty) {
+        display: none;
     }
 </style>
     """,
@@ -92,7 +142,7 @@ with tab_triage:
         with col_proveedor:
             proveedor = st.selectbox("Proveedor del modelo", options=["ollama", "groq"])
         with col_boton:
-            st.write("")
+            st.markdown("<div style='height: 1.9rem'></div>", unsafe_allow_html=True)
             enviado = st.form_submit_button("Clasificar incidencia")
 
     if enviado:
