@@ -88,8 +88,12 @@ with tab_triage:
             placeholder="Ej: Hay una rama rota colgando sobre un banco en el Retiro",
             height=120,
         )
-        proveedor = st.selectbox("Proveedor del modelo", options=["ollama", "groq"])
-        enviado = st.form_submit_button("Clasificar incidencia")
+        col_proveedor, col_boton, _ = st.columns([1, 1, 2])
+        with col_proveedor:
+            proveedor = st.selectbox("Proveedor del modelo", options=["ollama", "groq"])
+        with col_boton:
+            st.write("")
+            enviado = st.form_submit_button("Clasificar incidencia")
 
     if enviado:
         if not texto_incidencia.strip():
@@ -186,10 +190,12 @@ with tab_metricas:
         df = pd.read_csv(ruta_metrics)
 
         # Filtro por proveedor
-        filtro_proveedor = st.selectbox(
-            "Filtrar por proveedor",
-            options=["todos", "ollama", "groq"]
-        )
+        col_filtro, _ = st.columns([1, 3])
+        with col_filtro:
+            filtro_proveedor = st.selectbox(
+                "Filtrar por proveedor",
+                options=["todos", "ollama", "groq"]
+            )
 
         if filtro_proveedor != "todos":
             df_filtrado = df[df["proveedor"] == filtro_proveedor].copy()
